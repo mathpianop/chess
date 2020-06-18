@@ -8,6 +8,10 @@ POS_CONVERSION["#{i+1}"] = 0
 i += 1
 end
 
+module Game_play
+    #Fill This
+end
+
 class Game
     attr_accessor :board
     attr_reader :white_pieces, :red_pieces, :pieces
@@ -22,13 +26,30 @@ class Game
                   %w(- - - - - - - -),
                   %w(- - - - - - - -)]
 
-        @white_pieces = [Pawn.new([0,1], "white"), Pawn.new([1,1], "white",
-                        #ETC
-                            ]
-        
-        @red_pieces = [Pawn.new([0,6], "red"), Pawn.new([1,6], "red",
-                    #ETC
-                         ]
+        @white_pieces = [Piece.new([0,0], "white", "rook"), 
+                        Piece.new([7,0], "white", "rook"),
+                        Piece.new([1,0], "white", "knight"), 
+                        Piece.new([6,0], "white", "knight"),
+                        Piece.new([2,0], "white", "bishop"), 
+                        Piece.new([5,0], "white", "bishop"),
+                        Piece.new([3,0], "white", "queen"), 
+                        King.new("white")]
+    
+        @red_pieces = [Piece.new([0,7], "red", "rook"), 
+                        Piece.new([7,7], "red", "rook"),
+                        Piece.new([1,7], "red", "knight"), 
+                        Piece.new([6,7], "red", "knight"),
+                        Piece.new([2,7], "red", "bishop"), 
+                        Piece.new([5,7], "red", "bishop"),
+                        Piece.new([3,7], "red", "queen"), 
+                        King.new("red")]
+
+        i = 0
+        while i < 8 do
+        @white_pieces.push(Pawn.new([i,1], "white"))
+        @red_pieces.push(Pawn.new([i,6], "red"))
+        i += 1
+        end
 
         @pieces = @white_pieces + @red_pieces
 
@@ -113,7 +134,121 @@ module Rank_movements_allowed
 end
 
 module Path_clear
-    #Fill this, I assume
+    def path_clear_for_pawn?(start_pos, end_pos)
+        if abs(start_pos[1] - end_pos[1] == 1)
+            return true
+        elsif start_pos[1] > end_pos[1]
+            Piece.pieces.any? do |piece| 
+                piece.position[1] == start_pos[1] &&
+                (piece.position[0] == start_pos[0] - 1)
+            end
+        elsif end_pos[1] > start_pos[1]
+            Piece.pieces.any? do |piece| 
+                piece.position[1] == start_pos[1] &&
+                (piece.position[0] == start_pos[0] + 1)
+            end
+        end
+    end
+
+    def path_clear_for_rook?(start_pos, end_pos)
+        if start_pos[0] == end_pos[0]
+            if start_pos[1] > end_pos[1]
+                Piece.pieces.any? do |piece| 
+                    piece.position[0] == start_pos &&
+                    piece.position[1].between?(end_pos[1] + 1, start_pos[1] - 1)
+                end
+            elsif start_pos[1] < end_pos[1]
+                Piece.pieces.any? do |piece| 
+                    piece.position[0] == start_pos &&
+                    piece.position[1].between?(start_pos[1] + 1, end_pos[1] - 1)
+                end
+            end
+        elsif start_pos[1] == end_pos[1]
+            if start_pos[0] > end_pos[0]
+                Piece.pieces.any? do |piece| 
+                    piece.position[1] == start_pos &&
+                    piece.position[0].between?(end_pos[0] + 1, start_pos[0] - 1)
+                end
+            elsif start_pos[1] < end_pos[1]
+                Piece.pieces.any? do |piece| 
+                    piece.position[1] == start_pos &&
+                    piece.position[0].between?(start_pos[0] + 1, end_pos[0] - 1)
+                end
+            end
+        end
+    end
+
+    def path_clear_for_bishop?(start_pos, end_pos)
+        if start_pos[0] > end_pos[0] && start_pos[1] > end_pos[1]
+                Piece.pieces.any? do |piece|
+                    piece.position[0].between?(end_pos[0] + 1, start_pos[0] -1) &&
+                    piece.position[1].between?(end_pos[1] + 1, start_pos[1] -1)
+                end
+        elsif start_pos[0] < end_pos[0] && start_pos[1] > end_pos[1]
+            Piece.pieces.any? do |piece|
+                piece.position[0].between?(start_pos[0] + 1, end_pos[0] -1) &&
+                piece.position[1].between?(end_pos[1] + 1, start_pos[1] -1)
+            end
+        elsif start_pos[0] > end_pos[0] && start_pos[1] < end_pos[1]
+            Piece.pieces.any? do |piece|
+                piece.position[0].between?(end_pos[0] + 1, start_pos[0] -1) &&
+                piece.position[1].between?(start_pos[1] + 1, end_pos[1] -1)
+            end
+        elsif start_pos[0] < end_pos[0] && start_pos[1] < end_pos[1]
+            Piece.pieces.any? do |piece|
+                piece.position[0].between?(start_pos[0] + 1, end_pos[0] -1) &&
+                piece.position[1].between?(start_pos[1] + 1, end_pos[1] -1)
+            end
+        end      
+    end
+
+    def path_clear_for_queen?(start_pos, end_pos)
+        if start_pos[0] == end_pos[0]
+            if start_pos[1] > end_pos[1]
+                Piece.pieces.any? do |piece| 
+                    piece.position[0] == start_pos &&
+                    piece.position[1].between?(end_pos[1] + 1, start_pos[1] - 1)
+                end
+            elsif start_pos[1] < end_pos[1]
+                Piece.pieces.any? do |piece| 
+                    piece.position[0] == start_pos &&
+                    piece.position[1].between?(start_pos[1] + 1, end_pos[1] - 1)
+                end
+            end
+        elsif start_pos[1] == end_pos[1]
+            if start_pos[0] > end_pos[0]
+                Piece.pieces.any? do |piece| 
+                    piece.position[1] == start_pos &&
+                    piece.position[0].between?(end_pos[0] + 1, start_pos[0] -1)
+                end
+            elsif start_pos[1] < end_pos[1]
+                Piece.pieces.any? do |piece| 
+                    piece.position[1] == start_pos &&
+                    piece.position[0].between?(start_pos[0] + 1, end_pos[0] -1)
+                end
+            end
+        elsif start_pos[0] > end_pos[0] && start_pos[1] > end_pos[1]
+                Piece.pieces.any? do |piece|
+                    piece.position[0].between?(end_pos[0] + 1, start_pos[0] -1) &&
+                    piece.position[1].between?(end_pos[1] + 1, start_pos[1] -1)
+                end
+        elsif start_pos[0] < end_pos[0] && start_pos[1] > end_pos[1]
+            Piece.pieces.any? do |piece|
+                piece.position[0].between?(start_pos[0] + 1, end_pos[0] -1) &&
+                piece.position[1].between?(end_pos[1] + 1, start_pos[1] -1)
+            end
+        elsif start_pos[0] > end_pos[0] && start_pos[1] < end_pos[1]
+            Piece.pieces.any? do |piece|
+                piece.position[0].between?(end_pos[0] + 1, start_pos[0] -1) &&
+                piece.position[1].between?(start_pos[1] + 1, end_pos[1] -1)
+            end
+        elsif start_pos[0] < end_pos[0] && start_pos[1] < end_pos[1]
+            Piece.pieces.any? do |piece|
+                piece.position[0].between?(start_pos[0] + 1, end_pos[0] -1) &&
+                piece.position[1].between?(start_pos[1] + 1, end_pos[1] -1)
+            end
+        end  
+    end
 end
 
 module Attack
@@ -180,38 +315,59 @@ class Move
     def initialize(piece, end_pos)
         @piece = piece
         @end_pos = end_pos
-        #These next three are unneccesary?
         @start_pos = piece.position
-        @rank = piece.rank
-        @color = piece.COLOR
     end
 
     def allowed_for_piece?
-        if @rank == "pawn"
+        if piece.rank == "pawn"
             move_allowed_for_pawn?(@start_pos, @end_pos, @color)
-        elsif @rank == "rook"
+        elsif piece.rank == "rook"
             move_allowed_for_rook?(@start_pos, @end_pos)
-        elsif @rank == "knight"
+        elsif piece.rank == "knight"
             move_allowed_for_knight?(@start_pos, @end_pos)
-        elsif @rank == "bishop"
+        elsif piece.rank == "bishop"
             move_allowed_for_bishop?(@start_pos, @end_pos)
-        elsif @rank == "queen"
+        elsif piece.rank == "queen"
             move_allowed_for_queen?(@start_pos, @end_pos)
-        elsif @rank == "king"
+        elsif piece.rank == "king"
             move_allowed_for_king?(@start_pos, @end_pos)
         end
     end
 
-    def promotion?
-        #Fill this
+    def pawn_promotion
+        if piece.rank == "pawn" || piece.COLOR = "white"
+            if end_pos[1] == 8
+                piece.promote_pawn
+        elsif piece.rank == "pawn" || piece.COLOR = "red"
+            if end_pos[1] == 0
+                piece.promote_pawn
+            end
+        end
     end
 
+
     def path_clear?
-        #Fill this. Include occupied with friend option here
+        if piece.rank == "pawn"
+            path_clear_for_pawn?(start_pos, end_pos)
+        elsif piece.rank == "rook"
+            path_clear_for_rook?(start_pos, end_pos)
+        elsif piece.rank == "bishop"
+            path_clear_for_bishop?(start_pos, end_pos)
+        elsif piece.rank == "queen" 
+            path_clear_for_queen?(start_pos, end_pos)
+        end 
+    end
+
+    def occupied_by_friend?
+        if piece.COLOR == "white"
+            Piece.white_pieces.any? { |piece| piece.position == end_pos}
+        elsif piece.COLOR == "red"
+            Piece.red_pieces.any? { |piece| piece.position == end_pos}
+        end
     end
 
     def change_position
-        #Fill this
+        piece.change_position(end_pos)
     end
 
     
@@ -254,6 +410,10 @@ class Piece
         @@red_pieces
     end
 
+    def change_position(end_pos)
+        @position = end_pos
+    end
+
     def surrender
         @position = nil
         if @COLOR == "white"
@@ -265,45 +425,45 @@ class Piece
 end
 
 class Pawn < Piece
-    def initialize(initial_position, color, rank)
+    def initialize(initial_position, color)
         @position = initial_position
-        @rank = rank
+        @rank = "pawn"
         @COLOR = color
-        @symbol = color[1] + rank[1].upcase
+        @symbol = color[1] + "P"
         @first_move = true
 
         @@pieces.push(self)
+    end
+
+    def promote_pawn
+        @rank = "queen"
+        @symbol = color[1] + "Q"
+    end
+
+    def change_position
+        super
+    end
+
+    def surrender
+        super
     end
 end
 
 
 class King < Piece
-   
-end
-
-class Game
-    attr_reader :variable
-
-    def initialize
-        @variable = "snoot"
+    def initialize(color)
+        if color == "white"
+            @position = [4,0]
+        elsif color == "red"
+            @position = [4,7]
+        end
+        @rank = "king"
+        @COLOR = color
+        @symbol = color[1] + "K"
     end
 
-    def play
-        move = Move.new
-        move.make_move
-    end
-end
-
-class Move
-    def initialize
-    end
-
-    def make_move
-        puts Game.variable
+    def change_position
+        super
     end
 end
-
-game = Game.new
-game.play
-
 
