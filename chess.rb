@@ -1,5 +1,11 @@
 
 #Include castling! En Passant???
+#Fill in game_play. 
+#Do checkmate/stalemate
+#Update pawn allowed move to PREVENT direct attack
+# Reconfigure Path clear module to create path arrays for a given move. Then it 
+#can be used in the checkmate method
+#Comment!!
 POS_CONVERSION = {"a" => 0, "b" => 1, "c" => 2, "d" => 3, 
                 "e" => 4, "f" => 5, "g" => 6, "h" => 7}
 i = 0
@@ -9,7 +15,33 @@ i += 1
 end
 
 module Game_play
-    #Fill This
+    def make_a_move(piece, end_pos)
+        move = Move.new(piece, end_pos)
+        if !move.allowed_for_piece?
+            puts "That's not a legal move for a #{piece.rank}. "\
+                "Please try again!"
+            return "illegal"
+        elsif !move.path_clear?
+            puts "There are pieces in the way of that move. Please try again!"
+            return "illegal"
+        elsif move.occupied_by_friend?
+            puts "You've already got one of your own pieces there. Please try again!"
+            return "illegal"
+        elsif move.capture?
+            move.trying_to_capture_king? ? return "illegal" :  move.capture
+        
+            move.change_position
+            move.pawn_promotion
+            update_board()
+
+        if @red_king.check?
+            puts "Red King is in check"
+        elsif @white_king.check?
+            puts "White King is in check"
+        end
+    end
+# Fill this with turn stuff. Include checkmate test here?
+
 end
 
 class Game
@@ -33,7 +65,7 @@ class Game
                         Piece.new([2,0], "white", "bishop"), 
                         Piece.new([5,0], "white", "bishop"),
                         Piece.new([3,0], "white", "queen"), 
-                        King.new("white")]
+                        @white_king = King.new("white")]
     
         @red_pieces = [Piece.new([0,7], "red", "rook"), 
                         Piece.new([7,7], "red", "rook"),
@@ -42,7 +74,7 @@ class Game
                         Piece.new([2,7], "red", "bishop"), 
                         Piece.new([5,7], "red", "bishop"),
                         Piece.new([3,7], "red", "queen"), 
-                        King.new("red")]
+                        @red_king = King.new("red")]
 
         i = 0
         while i < 8 do
@@ -52,12 +84,6 @@ class Game
         end
 
         @pieces = @white_pieces + @red_pieces
-
-    
-        
-        #Fill in the rest of the pieces once 
-        #sure of how we're setting this up
-
     end
 
     def update_board
@@ -66,14 +92,13 @@ class Game
             j = piece.position[1]
             @board[i][j] = piece.symbol
         end
-        return @board
+        puts @board.each { |x| x.join(" ")}
     end
 
     def play_game
         #Fill this
     end
 end
-
 
 module Rank_movements_allowed
     def move_allowed_for_pawn?(start_pos, end_pos, color)
@@ -253,27 +278,28 @@ end
 
 module Attack
 
-    def check?
-        #Fill this
-    end 
-
     def checkmate?
-        #Fill this
+        #Fill this. We assume that there is already check.
     end
+
+    def stalemate?
+        #Fill This
+    end
+
 
     def trying_to_capture_king?
-        if color = "white"
+        if @piece.color = "white"
             Piece.red_pieces.each do |piece|
-                if piece.position == end_pos && piece.rank == "king"
+                if piece.position == @end_pos && piece.rank == "king"
                     puts "You cannot capture a king!"
                     return true
                 end
             end
         end
 
-        if color = "red"
+        if @piece.color = "red"
             Piece.white_pieces.each do |piece|
-                if piece.position == end_pos && piece.rank == "king"
+                if piece.position == @end_pos && piece.rank == "king"
                     puts "You cannot capture a king!"
                     return true
                 end
@@ -281,19 +307,19 @@ module Attack
         end
     end
 
-    def capture?(end_pos, color)
+    def capture?
         capture = false
-        if color = "white"
+        if @piece.color = "white"
             Piece.red_pieces.each do |piece|
-                if piece.position == end_pos
+                if @piece.position == @end_pos
                     capture = true
                 end
             end
         end
 
-        if color = "red"
+        if @piece.color = "red"
             Piece.white_pieces.each do |piece|
-                if piece.position == end_pos
+                if piece.position == @end_pos
                     capture = true
                 end
             end
@@ -301,8 +327,8 @@ module Attack
         return capture
     end
 
-    def capture(piece, end_pos)
-        captured_piece = Piece.pieces.select {|piece| piece.position == end_pos}
+    def capture
+        captured_piece = Piece.pieces.select {|piece| piece.position == @end_pos}
         puts "Captures #{captured_piece.COLOR} #{captured_piece.rank}."
         captured_piece.surrender
     end
@@ -319,55 +345,55 @@ class Move
     end
 
     def allowed_for_piece?
-        if piece.rank == "pawn"
+        if @piece.rank == "pawn"
             move_allowed_for_pawn?(@start_pos, @end_pos, @color)
-        elsif piece.rank == "rook"
+        elsif @piece.rank == "rook"
             move_allowed_for_rook?(@start_pos, @end_pos)
-        elsif piece.rank == "knight"
+        elsif @piece.rank == "knight"
             move_allowed_for_knight?(@start_pos, @end_pos)
-        elsif piece.rank == "bishop"
+        elsif @piece.rank == "bishop"
             move_allowed_for_bishop?(@start_pos, @end_pos)
-        elsif piece.rank == "queen"
+        elsif @piece.rank == "queen"
             move_allowed_for_queen?(@start_pos, @end_pos)
-        elsif piece.rank == "king"
+        elsif @piece.rank == "king"
             move_allowed_for_king?(@start_pos, @end_pos)
         end
     end
 
     def pawn_promotion
-        if piece.rank == "pawn" || piece.COLOR = "white"
-            if end_pos[1] == 8
-                piece.promote_pawn
-        elsif piece.rank == "pawn" || piece.COLOR = "red"
-            if end_pos[1] == 0
-                piece.promote_pawn
+        if @piece.rank == "pawn" || @piece.COLOR = "white"
+            if @end_pos[1] == 8
+                @piece.promote_pawn
+        elsif @piece.rank == "pawn" || @piece.COLOR = "red"
+            if @end_pos[1] == 0
+                @piece.promote_pawn
             end
         end
     end
 
 
     def path_clear?
-        if piece.rank == "pawn"
-            path_clear_for_pawn?(start_pos, end_pos)
-        elsif piece.rank == "rook"
-            path_clear_for_rook?(start_pos, end_pos)
-        elsif piece.rank == "bishop"
-            path_clear_for_bishop?(start_pos, end_pos)
-        elsif piece.rank == "queen" 
-            path_clear_for_queen?(start_pos, end_pos)
+        if @piece.rank == "pawn"
+            path_clear_for_pawn?(@start_pos, @end_pos)
+        elsif @piece.rank == "rook"
+            path_clear_for_rook?(@start_pos, @end_pos)
+        elsif @piece.rank == "bishop"
+            path_clear_for_bishop?(@start_pos, @end_pos)
+        elsif @piece.rank == "queen" 
+            path_clear_for_queen?(@start_pos, @end_pos)
         end 
     end
 
     def occupied_by_friend?
-        if piece.COLOR == "white"
-            Piece.white_pieces.any? { |piece| piece.position == end_pos}
+        if @piece.COLOR == "white"
+            Piece.white_pieces.any? { |piece| piece.position == @end_pos}
         elsif piece.COLOR == "red"
-            Piece.red_pieces.any? { |piece| piece.position == end_pos}
+            Piece.red_pieces.any? { |piece| piece.position == @end_pos}
         end
     end
 
     def change_position
-        piece.change_position(end_pos)
+       @piece.change_position(@end_pos)
     end
 
     
@@ -417,9 +443,9 @@ class Piece
     def surrender
         @position = nil
         if @COLOR == "white"
-            white_pieces_captured.push(self)
+            @@white_pieces_captured.push(self)
         elsif @COLOR == "red"
-            red_pieces_captured.push(self)
+            @@red_pieces_captured.push(self)
         end
     end
 end
@@ -460,10 +486,68 @@ class King < Piece
         @rank = "king"
         @COLOR = color
         @symbol = color[1] + "K"
+        @checking_pieces = []
+        @checking_moves = []
     end
 
     def change_position
         super
     end
-end
 
+    def check?
+        if @COLOR == "white"
+            Pieces.red_pieces.each do |piece|
+                move = Move.new(piece, @position)
+                if move.allowed_for_piece? && move.path_clear? && move.capture?
+                    self.checking_pieces.push(move)
+                    self.checking_moves.push(move)
+                    return true
+                end
+            end
+        elsif @COLOR == "red"
+            Pieces.white_pieces.each do |piece|
+                move = Move.new(piece, @position)
+                if move.allowed_for_piece? && move.path_clear? && move.capture?
+                    self.checking_pieces.push(piece)
+                    self.checking_moves.push(move)
+                    return true
+                end
+            end
+        else 
+            return false
+        end
+    end
+
+    #We assume that piece is in check
+    def checkmate?
+        if @COLOR == "white"
+            if @checking_piece.length == 1
+                #Here we check IF it's possible to capture the checking piece
+                Pieces.white_pieces.each do |piece|
+                    move = Move.new(piece, @checking_piece[0].position)
+                    if move.allowed_for_piece? && move.path_clear?
+                        # Finish this. Figure out reverse move thingy
+                    end
+                end
+                #Here we check IF it's possible to block the checking pieces
+                Pieces.white_pieces.each do |piece|
+                    @checking_moves[0].path.each do |position_along_path|
+                        blocking_move = Move.new(piece, position_along_path)
+                        if blocking_move.allowed_for_piece? &&
+                            blocking_move.path_clear?
+                            # Finish this. Figure out reverse move thingy
+                        end
+                    end
+                end
+            else
+                #Here we check IF King can move out of danger.
+                
+
+            end          
+        elsif @COLOR == "red"
+            #copy stuff from above
+
+        end
+        return true
+    end
+end
