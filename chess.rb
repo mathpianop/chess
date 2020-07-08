@@ -72,13 +72,12 @@ class Game
                         @red_king = King.new("red")]
 
         i = 0
-        while i < 8 do
+        while i < 8 
         @white_pieces.push(Pawn.new([i,1], "white"))
         @red_pieces.push(Pawn.new([i,6], "red"))
         i += 1
         end
 
-        @pieces = @white_pieces + @red_pieces
     end
 
     def get_board
@@ -166,17 +165,17 @@ end
 
 module Path_clear
     def path_clear_for_pawn?(start_pos, end_pos)
-        if abs(start_pos[1] - end_pos[1] == 1)
+        if (start_pos[1] - end_pos[1]).abs == 1
             return true
         elsif start_pos[1] > end_pos[1]
-            Piece.pieces.any? do |piece| 
-                piece.position[1] == start_pos[1] &&
-                (piece.position[0] == start_pos[0] - 1)
+            Piece.pieces.none? do |piece| 
+                piece.position[0] == start_pos[0] &&
+                (piece.position[1] == (start_pos[1] - 1))
             end
         elsif end_pos[1] > start_pos[1]
-            Piece.pieces.any? do |piece| 
-                piece.position[1] == start_pos[1] &&
-                (piece.position[0] == start_pos[0] + 1)
+            Piece.pieces.none? do |piece| 
+                piece.position[0] == start_pos[0] &&
+                (piece.position[1] == (start_pos[1] + 1))
             end
         end
     end
@@ -184,24 +183,24 @@ module Path_clear
     def path_clear_for_rook?(start_pos, end_pos)
         if start_pos[0] == end_pos[0]
             if start_pos[1] > end_pos[1]
-                Piece.pieces.any? do |piece| 
+                Piece.pieces.none? do |piece| 
                     piece.position[0] == start_pos &&
                     piece.position[1].between?(end_pos[1] + 1, start_pos[1] - 1)
                 end
             elsif start_pos[1] < end_pos[1]
-                Piece.pieces.any? do |piece| 
+                Piece.pieces.none? do |piece| 
                     piece.position[0] == start_pos &&
                     piece.position[1].between?(start_pos[1] + 1, end_pos[1] - 1)
                 end
             end
         elsif start_pos[1] == end_pos[1]
             if start_pos[0] > end_pos[0]
-                Piece.pieces.any? do |piece| 
+                Piece.pieces.none? do |piece| 
                     piece.position[1] == start_pos &&
                     piece.position[0].between?(end_pos[0] + 1, start_pos[0] - 1)
                 end
             elsif start_pos[1] < end_pos[1]
-                Piece.pieces.any? do |piece| 
+                Piece.pieces.none? do |piece| 
                     piece.position[1] == start_pos &&
                     piece.position[0].between?(start_pos[0] + 1, end_pos[0] - 1)
                 end
@@ -211,22 +210,22 @@ module Path_clear
 
     def path_clear_for_bishop?(start_pos, end_pos)
         if start_pos[0] > end_pos[0] && start_pos[1] > end_pos[1]
-                Piece.pieces.any? do |piece|
+                Piece.pieces.none? do |piece|
                     piece.position[0].between?(end_pos[0] + 1, start_pos[0] -1) &&
                     piece.position[1].between?(end_pos[1] + 1, start_pos[1] -1)
                 end
         elsif start_pos[0] < end_pos[0] && start_pos[1] > end_pos[1]
-            Piece.pieces.any? do |piece|
+            Piece.pieces.none? do |piece|
                 piece.position[0].between?(start_pos[0] + 1, end_pos[0] -1) &&
                 piece.position[1].between?(end_pos[1] + 1, start_pos[1] -1)
             end
         elsif start_pos[0] > end_pos[0] && start_pos[1] < end_pos[1]
-            Piece.pieces.any? do |piece|
+            Piece.pieces.none? do |piece|
                 piece.position[0].between?(end_pos[0] + 1, start_pos[0] -1) &&
                 piece.position[1].between?(start_pos[1] + 1, end_pos[1] -1)
             end
         elsif start_pos[0] < end_pos[0] && start_pos[1] < end_pos[1]
-            Piece.pieces.any? do |piece|
+            Piece.pieces.none? do |piece|
                 piece.position[0].between?(start_pos[0] + 1, end_pos[0] -1) &&
                 piece.position[1].between?(start_pos[1] + 1, end_pos[1] -1)
             end
@@ -236,45 +235,45 @@ module Path_clear
     def path_clear_for_queen?(start_pos, end_pos)
         if start_pos[0] == end_pos[0]
             if start_pos[1] > end_pos[1]
-                Piece.pieces.any? do |piece| 
+                Piece.pieces.none? do |piece| 
                     piece.position[0] == start_pos &&
                     piece.position[1].between?(end_pos[1] + 1, start_pos[1] - 1)
                 end
             elsif start_pos[1] < end_pos[1]
-                Piece.pieces.any? do |piece| 
+                Piece.pieces.none? do |piece| 
                     piece.position[0] == start_pos &&
                     piece.position[1].between?(start_pos[1] + 1, end_pos[1] - 1)
                 end
             end
         elsif start_pos[1] == end_pos[1]
             if start_pos[0] > end_pos[0]
-                Piece.pieces.any? do |piece| 
+                Piece.pieces.none? do |piece| 
                     piece.position[1] == start_pos &&
                     piece.position[0].between?(end_pos[0] + 1, start_pos[0] -1)
                 end
             elsif start_pos[1] < end_pos[1]
-                Piece.pieces.any? do |piece| 
+                Piece.pieces.none? do |piece| 
                     piece.position[1] == start_pos &&
                     piece.position[0].between?(start_pos[0] + 1, end_pos[0] -1)
                 end
             end
         elsif start_pos[0] > end_pos[0] && start_pos[1] > end_pos[1]
-                Piece.pieces.any? do |piece|
+                Piece.pieces.none? do |piece|
                     piece.position[0].between?(end_pos[0] + 1, start_pos[0] -1) &&
                     piece.position[1].between?(end_pos[1] + 1, start_pos[1] -1)
                 end
         elsif start_pos[0] < end_pos[0] && start_pos[1] > end_pos[1]
-            Piece.pieces.any? do |piece|
+            Piece.pieces.none? do |piece|
                 piece.position[0].between?(start_pos[0] + 1, end_pos[0] -1) &&
                 piece.position[1].between?(end_pos[1] + 1, start_pos[1] -1)
             end
         elsif start_pos[0] > end_pos[0] && start_pos[1] < end_pos[1]
-            Piece.pieces.any? do |piece|
+            Piece.pieces.none? do |piece|
                 piece.position[0].between?(end_pos[0] + 1, start_pos[0] -1) &&
                 piece.position[1].between?(start_pos[1] + 1, end_pos[1] -1)
             end
         elsif start_pos[0] < end_pos[0] && start_pos[1] < end_pos[1]
-            Piece.pieces.any? do |piece|
+            Piece.pieces.none? do |piece|
                 piece.position[0].between?(start_pos[0] + 1, end_pos[0] -1) &&
                 piece.position[1].between?(start_pos[1] + 1, end_pos[1] -1)
             end
@@ -343,6 +342,7 @@ end
 class Move
     include Attack
     include Rank_movements_allowed
+    include Path_clear
 
     def initialize(piece, end_pos)
         @piece = piece
@@ -353,6 +353,7 @@ class Move
     def allowed_for_piece?
         if @piece.rank == "pawn"
             move_allowed_for_pawn?(@start_pos, @end_pos, @color)
+           
         elsif @piece.rank == "rook"
             move_allowed_for_rook?(@start_pos, @end_pos)
         elsif @piece.rank == "knight"
@@ -461,9 +462,11 @@ class Piece
         @position = nil
         if @COLOR == "white"
             @@white_pieces_captured.push(self)
+            @@white_pieces.delete(self)
         elsif @COLOR == "red"
             @@red_pieces_captured.push(self)
         end
+        @@pieces.delete(self)
     end
 end
 
@@ -565,6 +568,9 @@ class King < Piece
     end
 end
 
-game = Game.new
-game.get_board
-game.display_board
+
+
+
+
+
+
