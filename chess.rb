@@ -53,15 +53,6 @@ class Game
     attr_reader :white_pieces, :red_pieces, :pieces
 
     def initialize
-        @board = [%w(- - - - - - - -),
-                  %w(- - - - - - - -),
-                  %w(- - - - - - - -),
-                  %w(- - - - - - - -),
-                  %w(- - - - - - - -),
-                  %w(- - - - - - - -),
-                  %w(- - - - - - - -),
-                  %w(- - - - - - - -)]
-
         @white_pieces = [Piece.new([0,0], "white", "rook"), 
                         Piece.new([7,0], "white", "rook"),
                         Piece.new([1,0], "white", "knight"), 
@@ -90,7 +81,16 @@ class Game
         @pieces = @white_pieces + @red_pieces
     end
 
-    def update_board
+    def get_board
+        @board = [%w(- - - - - - - -),
+                %w(- - - - - - - -),
+                %w(- - - - - - - -),
+                %w(- - - - - - - -),
+                %w(- - - - - - - -),
+                %w(- - - - - - - -),
+                %w(- - - - - - - -),
+                %w(- - - - - - - -)]
+
         Piece.pieces.each do |piece|
             i = 7 - piece.position[1]
             j = piece.position[0]
@@ -99,7 +99,7 @@ class Game
     end
 
     def display_board
-        puts @board.each { |x| x.join(" ")}
+        @board.each { |x| puts x.join(" ")}
     end
 
     def play_game
@@ -406,7 +406,7 @@ end
 
 
 class Piece
-    attr_reader :position, :rank, :COLOR, :pieces, :white_pieces, :red_pieces
+    attr_reader :position, :rank, :COLOR, :pieces, :white_pieces, :red_pieces, :symbol
 
     @@pieces = []
     @@white_pieces = []
@@ -418,7 +418,7 @@ class Piece
         @position = initial_position
         @rank = rank
         @COLOR = color
-        @symbol = color[1] + rank[1].upcase
+        @symbol = assign_symbol(color, rank)
 
         @@pieces.push(self)
         if @COLOR == "white"
@@ -426,6 +426,18 @@ class Piece
         elsif
             @COLOR == "red"
             @@red_pieces.push(self)
+        end
+    end
+
+    def assign_symbol(color, rank)
+        if rank == "rook"
+            color == "white" ? "♖" : "♜"
+        elsif rank == "knight"
+            color == "white" ? "♘" : "♞"
+        elsif rank == "bishop"
+            color == "white" ? "♗" : "♝"
+        elsif rank == "queen"
+            color == "white" ? "♕" : "♛"
         end
     end
 
@@ -460,15 +472,14 @@ class Pawn < Piece
         @position = initial_position
         @rank = "pawn"
         @COLOR = color
-        @symbol = color[1] + "P"
+        color == "white" ? @symbol = "♙" : @symbol = "♟"
         @first_move = true
-
         @@pieces.push(self)
     end
 
     def promote_pawn
         @rank = "queen"
-        @symbol = color[1] + "Q"
+        color == "white" ? @symbol = "♕" : @symbol = "♛"
     end
 
     def change_position
@@ -483,16 +494,13 @@ end
 
 class King < Piece
     def initialize(color)
-        if color == "white"
-            @position = [4,0]
-        elsif color == "red"
-            @position = [4,7]
-        end
+        color == "white" ? @position = [4,0] : @position = [4,7]
         @rank = "king"
         @COLOR = color
-        @symbol = color[1] + "K"
+        color == "white" ? @symbol = "♔" : @symbol = "♚"
         @checking_pieces = []
         @checking_moves = []
+        @@pieces.push(self)
     end
 
     def change_position
@@ -556,3 +564,7 @@ class King < Piece
         return true
     end
 end
+
+game = Game.new
+game.get_board
+game.display_board
