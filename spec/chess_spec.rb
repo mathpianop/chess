@@ -38,7 +38,7 @@ game = Game.new
 
 
 describe Move do
-  describe "path_clear?" do
+  describe "#path_clear?" do
     it "returns true for pawn-first-move if next space is open" do
       piece = Piece.pieces.select { |piece| piece.position == [7,1]}[0]
       move1 = Move.new(piece,[7,3])
@@ -122,5 +122,83 @@ describe Move do
       move1 = Move.new(piece,[7,7])
       expect(move1.path_clear?).to eql(true)
     end
+  end
+
+  describe "#allowed_for_piece?" do
+    it "returns true for rook-shaped move" do
+      piece = Piece.pieces.select { |piece| piece.position == [6,7]}[0]
+      move1 = Move.new(piece,[6,0])
+      expect(move1.allowed_for_piece?).to eql(true)
+    end
+
+    it "returns false for non-rook-shaped move" do
+      piece = Piece.pieces.select { |piece| piece.position == [6,7]}[0]
+      move1 = Move.new(piece,[4,5])
+      expect(move1.allowed_for_piece?).to eql(false)
+    end
+
+    it "returns true for knight-shaped move" do
+      piece = Piece.pieces.select { |piece| piece.position == [2,5]}[0]
+      move1 = Move.new(piece,[4,4])
+      expect(move1.allowed_for_piece?).to eql(true)
+    end
+
+    it "returns true for knight-shaped move (orientation 2)" do
+      piece = Piece.pieces.select { |piece| piece.position == [2,5]}[0]
+      move1 = Move.new(piece,[3,7])
+      expect(move1.allowed_for_piece?).to eql(true)
+    end
+
+    it "returns true for knight-shaped move (orientation 3)" do
+      piece = Piece.pieces.select { |piece| piece.position == [2,5]}[0]
+      move1 = Move.new(piece,[0,6])
+      expect(move1.allowed_for_piece?).to eql(true)
+    end
+
+    it "returns false for non-knight-shaped move" do
+      piece = Piece.pieces.select { |piece| piece.position == [2,5]}[0]
+      move1 = Move.new(piece,[3,4])
+      expect(move1.allowed_for_piece?).to eql(false)
+    end
+
+    it "returns true for bishop-shaped move" do
+      piece = Piece.pieces.select { |piece| piece.position == [0,2]}[0]
+      move1 = Move.new(piece,[1,3])
+      expect(move1.allowed_for_piece?).to eql(true)
+    end
+
+    it "returns false for non-bishop-shaped move" do
+      piece = Piece.pieces.select { |piece| piece.position == [0,2]}[0]
+      move1 = Move.new(piece,[1,2])
+      expect(move1.allowed_for_piece?).to eql(false)
+    end
+
+    it "returns true for queen-shaped move" do
+      piece = Piece.pieces.select { |piece| piece.position == [5,2]}[0]
+      move1 = Move.new(piece,[2,5])
+      expect(move1.allowed_for_piece?).to eql(true)
+    end
+
+    it "returns false for non-queen-shaped move" do
+      piece = Piece.pieces.select { |piece| piece.position == [5,2]}[0]
+      move1 = Move.new(piece,[2,4])
+      expect(move1.allowed_for_piece?).to eql(false)
+    end
+
+    it "returns true for king-shaped move" do
+      piece = Piece.pieces.select { |piece| piece.position == [6,0]}[0]
+      move1 = Move.new(piece,[5,0])
+      expect(move1.allowed_for_piece?).to eql(true)
+    end
+
+    it "returns false for non-king-shaped move" do
+      piece = Piece.pieces.select { |piece| piece.position == [6,0]}[0]
+      move1 = Move.new(piece,[4,0])
+      expect(move1.allowed_for_piece?).to eql(false)
+    end
+
+  
+
+    
   end
 end

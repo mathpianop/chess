@@ -137,29 +137,29 @@ module Rank_movements_allowed
     end
 
     def move_allowed_for_knight?(start_pos, end_pos)
-        abs(start_pos[0] - end_pos[0]) == 2 &&
-        abs(start_pos[1] - end_pos[1]) == 1 ||
-        abs(start_pos[0] - end_pos[0]) == 1 &&
-        abs(start_pos[1] - end_pos[1]) == 2
+        (start_pos[0] - end_pos[0]).abs == 2 &&
+        (start_pos[1] - end_pos[1]).abs == 1 ||
+        (start_pos[0] - end_pos[0]).abs == 1 &&
+        (start_pos[1] - end_pos[1]).abs == 2
     end
 
     def move_allowed_for_bishop?(start_pos, end_pos)
-        abs(start_pos[0] - end_pos[0]) == abs(start_pos[1] - end_pos[1])
+        (start_pos[0] - end_pos[0]).abs == (start_pos[1] - end_pos[1]).abs
     end
 
     def move_allowed_for_queen?(start_pos, end_pos)
         start_pos[0] == end_pos[0] ||
         start_pos[1] == end_pos[1] ||
-        abs(start_pos[0] - end_pos[0]) == abs(start_pos[1] - end_pos[1])
+        (start_pos[0] - end_pos[0]).abs == (start_pos[1] - end_pos[1]).abs
     end
 
     def move_allowed_for_king?(start_pos, end_pos)
         start_pos[0] == end_pos[0] &&
-        abs(start_pos[0] - end_pos[0]) == 1 ||
+        (start_pos[1] - end_pos[1]).abs == 1 ||
         start_pos[1] == end_pos[1] &&
-        abs(start_pos[1] - end_pos[1]) == 1 ||
-        abs(start_pos[0] - end_pos[0]) == abs(start_pos[1] - end_pos[1]) &&
-        abs(start_pos[0] - end_pos[0]) == 1
+        (start_pos[0] - end_pos[0]).abs == 1 ||
+        (start_pos[0] - end_pos[0]).abs == (start_pos[1] - end_pos[1]).abs &&
+        (start_pos[0] - end_pos[0]).abs == 1
     end
 end
 
@@ -216,21 +216,25 @@ module Path_clear
     end
 
     def path_clear_for_bishop?(start_pos, end_pos)
+        # Case 1: Left-Down
         if start_pos[0] > end_pos[0] && start_pos[1] > end_pos[1]
                 Piece.pieces.none? do |piece|
                     piece.position[0].between?(end_pos[0] + 1, start_pos[0] -1) &&
                     piece.position[1].between?(end_pos[1] + 1, start_pos[1] -1)
                 end
+        # Case 2: Right-Down
         elsif start_pos[0] < end_pos[0] && start_pos[1] > end_pos[1]
             Piece.pieces.none? do |piece|
                 piece.position[0].between?(start_pos[0] + 1, end_pos[0] -1) &&
                 piece.position[1].between?(end_pos[1] + 1, start_pos[1] -1)
             end
+        # Case 3: Left-Up
         elsif start_pos[0] > end_pos[0] && start_pos[1] < end_pos[1]
             Piece.pieces.none? do |piece|
                 piece.position[0].between?(end_pos[0] + 1, start_pos[0] -1) &&
                 piece.position[1].between?(start_pos[1] + 1, end_pos[1] -1)
             end
+        # Case 4: Right-Up
         elsif start_pos[0] < end_pos[0] && start_pos[1] < end_pos[1]
             Piece.pieces.none? do |piece|
                 piece.position[0].between?(start_pos[0] + 1, end_pos[0] -1) &&
@@ -241,44 +245,52 @@ module Path_clear
 
     def path_clear_for_queen?(start_pos, end_pos)
         if start_pos[0] == end_pos[0]
+            # Case 1: vertical move down
             if start_pos[1] > end_pos[1]
                 Piece.pieces.none? do |piece| 
-                    piece.position[0] == start_pos &&
+                    piece.position[0] == start_pos[0] &&
                     piece.position[1].between?(end_pos[1] + 1, start_pos[1] - 1)
                 end
+            # Case 2: vertical move up
             elsif start_pos[1] < end_pos[1]
                 Piece.pieces.none? do |piece| 
-                    piece.position[0] == start_pos &&
+                    piece.position[0] == start_pos[0] &&
                     piece.position[1].between?(start_pos[1] + 1, end_pos[1] - 1)
                 end
             end
         elsif start_pos[1] == end_pos[1]
+            # Case 3: horizontal move left
             if start_pos[0] > end_pos[0]
                 Piece.pieces.none? do |piece| 
-                    piece.position[1] == start_pos &&
+                    piece.position[1] == start_pos[0] &&
                     piece.position[0].between?(end_pos[0] + 1, start_pos[0] -1)
                 end
+            # Case 4: horizontal move right
             elsif start_pos[1] < end_pos[1]
                 Piece.pieces.none? do |piece| 
-                    piece.position[1] == start_pos &&
+                    piece.position[1] == start_pos[0] &&
                     piece.position[0].between?(start_pos[0] + 1, end_pos[0] -1)
                 end
             end
+            # Case 5: Left-Down
         elsif start_pos[0] > end_pos[0] && start_pos[1] > end_pos[1]
                 Piece.pieces.none? do |piece|
                     piece.position[0].between?(end_pos[0] + 1, start_pos[0] -1) &&
                     piece.position[1].between?(end_pos[1] + 1, start_pos[1] -1)
                 end
+            # Case 6: Right-Down
         elsif start_pos[0] < end_pos[0] && start_pos[1] > end_pos[1]
             Piece.pieces.none? do |piece|
                 piece.position[0].between?(start_pos[0] + 1, end_pos[0] -1) &&
                 piece.position[1].between?(end_pos[1] + 1, start_pos[1] -1)
             end
+            # Case 7: Left-Up
         elsif start_pos[0] > end_pos[0] && start_pos[1] < end_pos[1]
             Piece.pieces.none? do |piece|
                 piece.position[0].between?(end_pos[0] + 1, start_pos[0] -1) &&
                 piece.position[1].between?(start_pos[1] + 1, end_pos[1] -1)
             end
+            # Case 8: Right-Up
         elsif start_pos[0] < end_pos[0] && start_pos[1] < end_pos[1]
             Piece.pieces.none? do |piece|
                 piece.position[0].between?(start_pos[0] + 1, end_pos[0] -1) &&
@@ -360,7 +372,6 @@ class Move
     def allowed_for_piece?
         if @piece.rank == "pawn"
             move_allowed_for_pawn?(@start_pos, @end_pos, @color)
-           
         elsif @piece.rank == "rook"
             move_allowed_for_rook?(@start_pos, @end_pos)
         elsif @piece.rank == "knight"
