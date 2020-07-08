@@ -9,7 +9,7 @@
 POS_CONVERSION = {"a" => 0, "b" => 1, "c" => 2, "d" => 3, 
                 "e" => 4, "f" => 5, "g" => 6, "h" => 7}
 i = 0
-while i < 8 do
+while i < 8
 POS_CONVERSION["#{i+1}"] = 0
 i += 1
 end
@@ -28,11 +28,16 @@ module Game_play
             puts "You've already got one of your own pieces there. Please try again!"
             return "illegal"
         elsif move.capture?
-            move.trying_to_capture_king? ? return "illegal" :  move.capture
+            if move.trying_to_capture_king? 
+                return "illegal"
+            else
+                move.capture
+            end
         
             move.change_position
             move.pawn_promotion
             update_board()
+        end
 
         if @red_king.check?
             puts "Red King is in check"
@@ -41,7 +46,6 @@ module Game_play
         end
     end
 # Fill this with turn stuff. Include checkmate test here?
-
 end
 
 class Game
@@ -88,10 +92,13 @@ class Game
 
     def update_board
         Piece.pieces.each do |piece|
-            i = 7 - piece.position[0]
-            j = piece.position[1]
+            i = 7 - piece.position[1]
+            j = piece.position[0]
             @board[i][j] = piece.symbol
         end
+    end
+
+    def display_board
         puts @board.each { |x| x.join(" ")}
     end
 
@@ -112,7 +119,7 @@ module Rank_movements_allowed
             else
                 end_pos[1] - start_pos[1] == 1
             end
-        if color == "red"
+        elsif color == "red"
             if self.capture?
                 end_pos[1] - start_pos[1] == -1 &&
                 abs(end_pos[0] - start_pos[0]) == 1
@@ -155,7 +162,6 @@ module Rank_movements_allowed
         abs(start_pos[0] - end_pos[0]) == abs(start_pos[1] - end_pos[1]) &&
         abs(start_pos[0] - end_pos[0]) == 1
     end
-
 end
 
 module Path_clear
@@ -364,6 +370,7 @@ class Move
         if @piece.rank == "pawn" || @piece.COLOR = "white"
             if @end_pos[1] == 8
                 @piece.promote_pawn
+            end
         elsif @piece.rank == "pawn" || @piece.COLOR = "red"
             if @end_pos[1] == 0
                 @piece.promote_pawn
@@ -394,9 +401,7 @@ class Move
 
     def change_position
        @piece.change_position(@end_pos)
-    end
-
-    
+    end    
 end
 
 
