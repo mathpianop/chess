@@ -333,15 +333,15 @@ module Attack
 
     def capture?
         capture = false
-        if @piece.color = "white"
+        if @piece.COLOR == "white"
             Piece.red_pieces.each do |piece|
-                if @piece.position == @end_pos
+                if piece.position == @end_pos
                     capture = true
                 end
             end
         end
 
-        if @piece.color = "red"
+        if @piece.COLOR == "red"
             Piece.white_pieces.each do |piece|
                 if piece.position == @end_pos
                     capture = true
@@ -387,7 +387,7 @@ class Move
 
     def pawn_promotion
         if @piece.rank == "pawn" || @piece.COLOR = "white"
-            if @end_pos[1] == 8
+            if @end_pos[1] == 7
                 @piece.promote_pawn
             end
         elsif @piece.rank == "pawn" || @piece.COLOR = "red"
@@ -530,20 +530,18 @@ class King < Piece
 
     def check?
         if @COLOR == "white"
-            Pieces.red_pieces.each do |piece|
+            Piece.red_pieces.each do |piece|
                 move = Move.new(piece, @position)
                 if move.allowed_for_piece? && move.path_clear? && move.capture?
-                    self.checking_pieces.push(move)
-                    self.checking_moves.push(move)
                     return true
                 end
             end
+            return false
         elsif @COLOR == "red"
-            Pieces.white_pieces.each do |piece|
+            puts @position
+            Piece.white_pieces.each do |piece|
                 move = Move.new(piece, @position)
                 if move.allowed_for_piece? && move.path_clear? && move.capture?
-                    self.checking_pieces.push(piece)
-                    self.checking_moves.push(move)
                     return true
                 end
             end

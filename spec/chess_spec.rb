@@ -39,6 +39,12 @@ game = Game.new
 
 describe Move do
   describe "#path_clear?" do
+    it "returns true for all one-space moves" do
+      piece = Piece.pieces.select { |piece| piece.position == [4,6]}[0]
+      move1 = Move.new(piece,[4,7])
+      expect(move1.path_clear?).to eql(true)
+    end
+
     it "returns true for pawn-first-move if next space is open" do
       piece = Piece.pieces.select { |piece| piece.position == [7,1]}[0]
       move1 = Move.new(piece,[7,3])
@@ -196,9 +202,39 @@ describe Move do
       move1 = Move.new(piece,[4,0])
       expect(move1.allowed_for_piece?).to eql(false)
     end
+  end
 
-  
+  describe "#capture?" do
+    it "returns true if an enemy piece occupies end square" do
+      piece = Piece.pieces.select { |piece| piece.position == [4,6]}[0]
+      move1 = Move.new(piece,[4,7])
+      expect(move1.capture?).to eql(true)
+    end
 
-    
+    it "works for red pieces too" do
+      piece = Piece.pieces.select { |piece| piece.position == [6,7]}[0]
+      move1 = Move.new(piece,[6,1])
+      expect(move1.capture?).to eql(true)
+    end
+
+    it "returns false if it's moving to an unoccupied square" do
+      piece = Piece.pieces.select { |piece| piece.position == [4,6]}[0]
+      move1 = Move.new(piece,[4,5])
+      expect(move1.capture?).to eql(false)
+    end
+  end
+end
+
+describe King do
+  describe "#check?" do
+    it "returns true if a piece threatens the king" do
+      red_king = game.instance_variable_get(:@red_king)
+      expect(red_king.check?).to eql(true)
+    end
+
+    it "returns false if no piece is threatening the king" do
+      white_king = game.instance_variable_get(:@white_king)
+      expect(white_king.check?).to eql(false)
+    end
   end
 end
