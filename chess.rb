@@ -512,8 +512,96 @@ class Pawn < Piece
     end
 end
 
+module Get_path
+    def get_rook_path(start_pos, end_pos)
+        path = []
+        if start_pos[0] == end_pos[0]
+            # Case 1: vertical move down
+            if start_pos[1] > end_pos[1]
+                reverse_path = ((end_pos[1] + 1)...start_pos[1]).map do |row_idx|
+                    [start_pos[0], row_idx]
+                end
+                return reverse_path.reverse
+            # Case 2: vertical move up
+            elsif start_pos[1] < end_pos[1]
+                path = ((start_pos[1] + 1)...end_pos[1]).map do |row_idx|
+                    [start_pos[0], row_idx]
+                end
+                return path
+            end
+        elsif start_pos[1] == end_pos[1]
+            # Case 3: horizontal move left
+            if start_pos[0] > end_pos[0]
+                reverse_path = ((end_pos[0] + 1)...start_pos[0]).map do |column_idx|
+                    [column_idx, start_pos[1]]
+                end
+                return reverse_path.reverse
+            # Case 4: horizontal move right
+            elsif start_pos[0] < end_pos[0]
+                path = ((start_pos[0] + 1)...end_pos[0]).map do |column_idx|
+                    [column_idx, start_pos[1]]
+                end
+                return path
+            end
+        end
+    end
+
+    def get_bishop_path(start_pos, end_pos)
+        # Case 1: Left-Down
+        if start_pos[0] > end_pos[0] && start_pos[1] > end_pos[1]
+            path = ((end_pos[0] + 1)...start_pos[0]).map { |col_idx| [col_idx]}.reverse
+            ((end_pos[1] + 1)...start_pos[1]).each_with_index do |row_idx, idx|
+                path[-(idx + 1)].push(row_idx)
+            end
+            return path
+        # Case 2: Right-Down
+        elsif start_pos[0] < end_pos[0] && start_pos[1] > end_pos[1]
+            path = ((start_pos[0] + 1)...end_pos[0]).map { |col_idx| [col_idx]}
+            ((end_pos[1] + 1)...start_pos[1]).each_with_index do |row_idx, idx|
+                path[-(idx + 1)].push(row_idx)
+            end
+            return path
+        # Case 3: Left-Up
+        elsif start_pos[0] > end_pos[0] && start_pos[1] < end_pos[1]
+            path = ((end_pos[0] + 1)...start_pos[0]).map { |col_idx| [col_idx]}.reverse
+            ((start_pos[1] + 1)...end_pos[1]).each_with_index do |row_idx, idx|
+                path[idx].push(row_idx)
+            end
+            return path
+        # Case 4: Right-Up
+        elsif start_pos[0] < end_pos[0] && start_pos[1] < end_pos[1]
+            path = ((start_pos[0] + 1)...end_pos[0]).map { |col_idx| [col_idx]}
+            ((start_pos[1] + 1)...end_pos[1]).each_with_index do |row_idx, idx|
+                path[idx].push(row_idx)
+            end
+            return path
+        end      
+    end
+
+    def get_queen_path(start_pos, end_pos)
+        if start_pos[0] == end_pos[0] || start_pos[1] == end_pos[1]
+            get_rook_path(start_pos, end_pos)
+        else
+            get_bishop_path(start_pos, end_pos)
+        end
+
+        def get_path(rank, start_pos, end_pos)
+            if rank == "rook"
+                get_rook_path(start_pos, end_pos)
+            elsif rank == "bishop"
+                get_bishop_path(start_pos, end_pos)
+            elsif rank == "queen"
+                get_queen_path(start_pos, end_pos)
+            else
+                return []
+        end
+    end
+end
+
 
 class King < Piece
+    include Get_path
+
     def initialize(color)
         color == "white" ? @position = [4,0] : @position = [4,7]
         @rank = "king"
@@ -538,7 +626,6 @@ class King < Piece
             end
             return false
         elsif @COLOR == "red"
-            puts @position
             Piece.white_pieces.each do |piece|
                 move = Move.new(piece, @position)
                 if move.allowed_for_piece? && move.path_clear? && move.capture?
