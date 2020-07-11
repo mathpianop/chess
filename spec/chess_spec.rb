@@ -265,79 +265,79 @@ describe King do
     end
   end
 
-  describe "#get_bishop_path" do
-    it "returns bishop path, up-right" do
-      red_king = game.instance_variable_get(:@red_king)
-      expect(red_king.get_bishop_path([0,2], [3,5])).to eql([[1,3], [2,4]])
-    end
+  # describe "#get_bishop_path" do
+  #   it "returns bishop path, up-right" do
+  #     red_king = game.instance_variable_get(:@red_king)
+  #     expect(red_king.get_bishop_path([0,2], [3,5])).to eql([[1,3], [2,4]])
+  #   end
 
-    it "works going up-left " do
-      red_king = game.instance_variable_get(:@red_king)
-      expect(red_king.get_bishop_path([3,3], [0,6])).to eql([[2,4], [1,5]])
-    end
+  #   it "works going up-left " do
+  #     red_king = game.instance_variable_get(:@red_king)
+  #     expect(red_king.get_bishop_path([3,3], [0,6])).to eql([[2,4], [1,5]])
+  #   end
 
-    it "works going down-right" do 
-      red_king = game.instance_variable_get(:@red_king)
-      expect(red_king.get_bishop_path([0,3], [3,0])).to eql([[1,2], [2,1]])
-    end
+  #   it "works going down-right" do 
+  #     red_king = game.instance_variable_get(:@red_king)
+  #     expect(red_king.get_bishop_path([0,3], [3,0])).to eql([[1,2], [2,1]])
+  #   end
 
-    it "works going down-left" do
-      red_king = game.instance_variable_get(:@red_king)
-      expect(red_king.get_bishop_path([3,3], [0,0])).to eql([[2,2], [1,1]])
-    end
+  #   it "works going down-left" do
+  #     red_king = game.instance_variable_get(:@red_king)
+  #     expect(red_king.get_bishop_path([3,3], [0,0])).to eql([[2,2], [1,1]])
+  #   end
 
-    it "returns empty array if move is one square" do
-      red_king = game.instance_variable_get(:@red_king)
-      expect(red_king.get_bishop_path([4,6], [5,7])).to eql([])
-    end
-  end
+  #   it "returns empty array if move is one square" do
+  #     red_king = game.instance_variable_get(:@red_king)
+  #     expect(red_king.get_bishop_path([4,6], [5,7])).to eql([])
+  #   end
+  # end
 
-  describe "#get_queen_move" do
-    it "returns all intervening positions in a rook move" do
-      red_king = game.instance_variable_get(:@red_king)
-      expect(red_king.get_queen_path([4,6], [4,0])).to eql([[4,5], [4,4], [4,3], [4,2], [4,1]])
-    end
+  # describe "#get_queen_move" do
+  #   it "returns all intervening positions in a rook move" do
+  #     red_king = game.instance_variable_get(:@red_king)
+  #     expect(red_king.get_queen_path([4,6], [4,0])).to eql([[4,5], [4,4], [4,3], [4,2], [4,1]])
+  #   end
 
-    it "works going up" do
-      red_king = game.instance_variable_get(:@red_king)
-      expect(red_king.get_queen_path([4,0], [4,4])).to eql([[4,1], [4,2], [4,3]])
-    end
+  #   it "works going up" do
+  #     red_king = game.instance_variable_get(:@red_king)
+  #     expect(red_king.get_queen_path([4,0], [4,4])).to eql([[4,1], [4,2], [4,3]])
+  #   end
 
-    it "works going left" do
-      red_king = game.instance_variable_get(:@red_king)
-      expect(red_king.get_queen_path([1,7], [5,7])).to eql([[2,7], [3,7], [4,7]])
-    end
+  #   it "works going left" do
+  #     red_king = game.instance_variable_get(:@red_king)
+  #     expect(red_king.get_queen_path([1,7], [5,7])).to eql([[2,7], [3,7], [4,7]])
+  #   end
 
-    it "works going right" do
-      red_king = game.instance_variable_get(:@red_king)
-      expect(red_king.get_queen_path([4,7], [0,7])).to eql([[3,7], [2,7], [1,7]])
-    end
+  #   it "works going right" do
+  #     red_king = game.instance_variable_get(:@red_king)
+  #     expect(red_king.get_queen_path([4,7], [0,7])).to eql([[3,7], [2,7], [1,7]])
+  #   end
 
-    it "returns bishop path, up-right" do
-      red_king = game.instance_variable_get(:@red_king)
-      expect(red_king.get_queen_path([0,2], [3,5])).to eql([[1,3], [2,4]])
-    end
+  #   it "returns bishop path, up-right" do
+  #     red_king = game.instance_variable_get(:@red_king)
+  #     expect(red_king.get_queen_path([0,2], [3,5])).to eql([[1,3], [2,4]])
+  #   end
 
-    it "works going up-left " do
-      red_king = game.instance_variable_get(:@red_king)
-      expect(red_king.get_queen_path([3,3], [0,6])).to eql([[2,4], [1,5]])
-    end
+  #   it "works going up-left " do
+  #     red_king = game.instance_variable_get(:@red_king)
+  #     expect(red_king.get_queen_path([3,3], [0,6])).to eql([[2,4], [1,5]])
+  #   end
 
-    it "works going down-right" do 
-      red_king = game.instance_variable_get(:@red_king)
-      expect(red_king.get_queen_path([0,3], [3,0])).to eql([[1,2], [2,1]])
-    end
+  #   it "works going down-right" do 
+  #     red_king = game.instance_variable_get(:@red_king)
+  #     expect(red_king.get_queen_path([0,3], [3,0])).to eql([[1,2], [2,1]])
+  #   end
 
-    it "works going down-left" do
-      red_king = game.instance_variable_get(:@red_king)
-      expect(red_king.get_queen_path([3,3], [0,0])).to eql([[2,2], [1,1]])
-    end
+  #   it "works going down-left" do
+  #     red_king = game.instance_variable_get(:@red_king)
+  #     expect(red_king.get_queen_path([3,3], [0,0])).to eql([[2,2], [1,1]])
+  #   end
 
-    it "returns empty array if move is one square" do
-      red_king = game.instance_variable_get(:@red_king)
-      expect(red_king.get_queen_path([4,6], [5,7])).to eql([])
-    end
-  end
+  #   it "returns empty array if move is one square" do
+  #     red_king = game.instance_variable_get(:@red_king)
+  #     expect(red_king.get_queen_path([4,6], [5,7])).to eql([])
+  #   end
+  # end
 end
 
   

@@ -1,11 +1,9 @@
 
 #Include castling! En Passant???
 #Fill in game_play. 
-#Do checkmate/stalemate
-#Update pawn allowed move to PREVENT direct attack
-# Reconfigure Path clear module to create path arrays for a given move. Then it 
-#can be used in the checkmate method
-#Comment!!
+#Test checkmate
+#Comment and clean
+# Rewrite Path_clear in terms of get_path!!
 POS_CONVERSION = {"a" => 0, "b" => 1, "c" => 2, "d" => 3, 
                 "e" => 4, "f" => 5, "g" => 6, "h" => 7}
 i = 0
@@ -33,7 +31,6 @@ module Game_play
             else
                 move.capture
             end
-        
             move.change_position
             move.pawn_promotion
             update_board()
@@ -113,20 +110,24 @@ module Rank_movements_allowed
                 end_pos[1] - start_pos[1] == 1 &&
                 abs(end_pos[0] - start_pos[0]) == 1
             elsif piece.first_move == true
-                end_pos[1] - start_pos[1] == 2 ||
-                end_pos[1] - start_pos[1] == 1
+                (end_pos[1] - start_pos[1] == 2 ||
+                end_pos[1] - start_pos[1] == 1) &&
+                Piece.red_pieces.none? {|piece| piece.position == end_pos}
             else
-                end_pos[1] - start_pos[1] == 1
+                end_pos[1] - start_pos[1] == 1 &&
+                Piece.red_pieces.none? {|piece| piece.position == end_pos}
             end
         elsif color == "red"
             if self.capture?
                 end_pos[1] - start_pos[1] == -1 &&
                 abs(end_pos[0] - start_pos[0]) == 1
             elsif piece.first_move == true
-                end_pos[1] - start_pos[1] == -2 ||
-                end_pos[1] - start_pos[1] == -1
+                (end_pos[1] - start_pos[1] == -2 ||
+                end_pos[1] - start_pos[1] == -1) &&
+                Piece.white_pieces.none? {|piece| piece.position == end_pos}
             else
-                end_pos[1] - start_pos[1] == 1
+                end_pos[1] - start_pos[1] == 1 &&
+                Piece.white_pieces.none? {|piece| piece.position == end_pos}
             end
         end
     end
@@ -160,6 +161,93 @@ module Rank_movements_allowed
         (start_pos[0] - end_pos[0]).abs == 1 ||
         (start_pos[0] - end_pos[0]).abs == (start_pos[1] - end_pos[1]).abs &&
         (start_pos[0] - end_pos[0]).abs == 1
+    end
+end
+
+module Get_path
+    def get_rook_path(start_pos, end_pos)
+        path = []
+        if start_pos[0] == end_pos[0]
+            # Case 1: vertical move down
+            if start_pos[1] > end_pos[1]
+                reverse_path = ((end_pos[1] + 1)...start_pos[1]).map do |row_idx|
+                    [start_pos[0], row_idx]
+                end
+                return reverse_path.reverse
+            # Case 2: vertical move up
+            elsif start_pos[1] < end_pos[1]
+                path = ((start_pos[1] + 1)...end_pos[1]).map do |row_idx|
+                    [start_pos[0], row_idx]
+                end
+                return path
+            end
+        elsif start_pos[1] == end_pos[1]
+            # Case 3: horizontal move left
+            if start_pos[0] > end_pos[0]
+                reverse_path = ((end_pos[0] + 1)...start_pos[0]).map do |column_idx|
+                    [column_idx, start_pos[1]]
+                end
+                return reverse_path.reverse
+            # Case 4: horizontal move right
+            elsif start_pos[0] < end_pos[0]
+                path = ((start_pos[0] + 1)...end_pos[0]).map do |column_idx|
+                    [column_idx, start_pos[1]]
+                end
+                return path
+            end
+        end
+    end
+
+    def get_bishop_path(start_pos, end_pos)
+        # Case 1: Left-Down
+        if start_pos[0] > end_pos[0] && start_pos[1] > end_pos[1]
+            path = ((end_pos[0] + 1)...start_pos[0]).map { |col_idx| [col_idx]}.reverse
+            ((end_pos[1] + 1)...start_pos[1]).each_with_index do |row_idx, idx|
+                path[-(idx + 1)].push(row_idx)
+            end
+            return path
+        # Case 2: Right-Down
+        elsif start_pos[0] < end_pos[0] && start_pos[1] > end_pos[1]
+            path = ((start_pos[0] + 1)...end_pos[0]).map { |col_idx| [col_idx]}
+            ((end_pos[1] + 1)...start_pos[1]).each_with_index do |row_idx, idx|
+                path[-(idx + 1)].push(row_idx)
+            end
+            return path
+        # Case 3: Left-Up
+        elsif start_pos[0] > end_pos[0] && start_pos[1] < end_pos[1]
+            path = ((end_pos[0] + 1)...start_pos[0]).map { |col_idx| [col_idx]}.reverse
+            ((start_pos[1] + 1)...end_pos[1]).each_with_index do |row_idx, idx|
+                path[idx].push(row_idx)
+            end
+            return path
+        # Case 4: Right-Up
+        elsif start_pos[0] < end_pos[0] && start_pos[1] < end_pos[1]
+            path = ((start_pos[0] + 1)...end_pos[0]).map { |col_idx| [col_idx]}
+            ((start_pos[1] + 1)...end_pos[1]).each_with_index do |row_idx, idx|
+                path[idx].push(row_idx)
+            end
+            return path
+        end      
+    end
+
+    def get_queen_path(start_pos, end_pos)
+        if start_pos[0] == end_pos[0] || start_pos[1] == end_pos[1]
+            get_rook_path(start_pos, end_pos)
+        else
+            get_bishop_path(start_pos, end_pos)
+        end
+    end
+
+    def get_path(rank, start_pos, end_pos)
+        if rank == "rook"
+            get_rook_path(start_pos, end_pos)
+        elsif rank == "bishop"
+            get_bishop_path(start_pos, end_pos)
+        elsif rank == "queen"
+            get_queen_path(start_pos, end_pos)
+        else
+            return []
+        end
     end
 end
 
@@ -301,16 +389,6 @@ module Path_clear
 end
 
 module Attack
-
-    def checkmate?
-        #Fill this. We assume that there is already check.
-    end
-
-    def stalemate?
-        #Fill This
-    end
-
-
     def trying_to_capture_king?
         if @piece.color = "white"
             Piece.red_pieces.each do |piece|
@@ -359,14 +437,16 @@ module Attack
 end
 
 class Move
-    include Attack
-    include Rank_movements_allowed
+    include Get_path
     include Path_clear
+    include Rank_movements_allowed
+    include Attack
 
     def initialize(piece, end_pos)
         @piece = piece
         @end_pos = end_pos
         @start_pos = piece.position
+        @path = get_path(piece.rank, @start_pos, @end_pos)
     end
 
     def allowed_for_piece?
@@ -419,8 +499,12 @@ class Move
     end
 
     def change_position
-       @piece.change_position(@end_pos)
-    end    
+       @piece.position(@end_pos)
+    end  
+    
+    def create_path
+        @path = get_path(@piece.rank, @start_pos, @end_pos)
+    end
 end
 
 
@@ -483,8 +567,21 @@ class Piece
             @@white_pieces.delete(self)
         elsif @COLOR == "red"
             @@red_pieces_captured.push(self)
+            @@red_pieces.delete(self)
         end
         @@pieces.delete(self)
+    end
+
+    def restore(position)
+        @position = position
+        if @COLOR == "white"
+            @@white_pieces_captured.delete(self)
+            @@white_pieces.push(self)
+        elsif @COLOR == "red"
+            @@red_pieces_captured.delete(self)
+            @@red_pieces.push(self)
+        end
+        @@pieces.push(self)
     end
 end
 
@@ -512,103 +609,126 @@ class Pawn < Piece
     end
 end
 
-module Get_path
-    def get_rook_path(start_pos, end_pos)
-        path = []
-        if start_pos[0] == end_pos[0]
-            # Case 1: vertical move down
-            if start_pos[1] > end_pos[1]
-                reverse_path = ((end_pos[1] + 1)...start_pos[1]).map do |row_idx|
-                    [start_pos[0], row_idx]
+module Checkmate
+    def capture_checking_piece?(checking_piece, defender_color)
+        if defender_color == "red"
+            Pieces.red_pieces.each do |defender_piece|
+                move = Move.new(defender_piece, checking_piece.position)
+                if move.allowed_for_piece? && move.path_clear?
+                    threatening_position = checking_piece.position
+                    defender_position = defender_piece.position
+                    move.change_position
+                    checking_piece.surrender
+                    if !self.check?
+                        checking_piece.restore(threatening_position)
+                        defender_piece.restore(defender_position)
+                        return true
+                    else
+                        checking_piece.restore(threatening_position)
+                        defender_piece.restore(defender_position)
+                        return false
+                    end
                 end
-                return reverse_path.reverse
-            # Case 2: vertical move up
-            elsif start_pos[1] < end_pos[1]
-                path = ((start_pos[1] + 1)...end_pos[1]).map do |row_idx|
-                    [start_pos[0], row_idx]
-                end
-                return path
             end
-        elsif start_pos[1] == end_pos[1]
-            # Case 3: horizontal move left
-            if start_pos[0] > end_pos[0]
-                reverse_path = ((end_pos[0] + 1)...start_pos[0]).map do |column_idx|
-                    [column_idx, start_pos[1]]
-                end
-                return reverse_path.reverse
-            # Case 4: horizontal move right
-            elsif start_pos[0] < end_pos[0]
-                path = ((start_pos[0] + 1)...end_pos[0]).map do |column_idx|
-                    [column_idx, start_pos[1]]
-                end
-                return path
-            end
-        end
-    end
-
-    def get_bishop_path(start_pos, end_pos)
-        # Case 1: Left-Down
-        if start_pos[0] > end_pos[0] && start_pos[1] > end_pos[1]
-            path = ((end_pos[0] + 1)...start_pos[0]).map { |col_idx| [col_idx]}.reverse
-            ((end_pos[1] + 1)...start_pos[1]).each_with_index do |row_idx, idx|
-                path[-(idx + 1)].push(row_idx)
-            end
-            return path
-        # Case 2: Right-Down
-        elsif start_pos[0] < end_pos[0] && start_pos[1] > end_pos[1]
-            path = ((start_pos[0] + 1)...end_pos[0]).map { |col_idx| [col_idx]}
-            ((end_pos[1] + 1)...start_pos[1]).each_with_index do |row_idx, idx|
-                path[-(idx + 1)].push(row_idx)
-            end
-            return path
-        # Case 3: Left-Up
-        elsif start_pos[0] > end_pos[0] && start_pos[1] < end_pos[1]
-            path = ((end_pos[0] + 1)...start_pos[0]).map { |col_idx| [col_idx]}.reverse
-            ((start_pos[1] + 1)...end_pos[1]).each_with_index do |row_idx, idx|
-                path[idx].push(row_idx)
-            end
-            return path
-        # Case 4: Right-Up
-        elsif start_pos[0] < end_pos[0] && start_pos[1] < end_pos[1]
-            path = ((start_pos[0] + 1)...end_pos[0]).map { |col_idx| [col_idx]}
-            ((start_pos[1] + 1)...end_pos[1]).each_with_index do |row_idx, idx|
-                path[idx].push(row_idx)
-            end
-            return path
-        end      
-    end
-
-    def get_queen_path(start_pos, end_pos)
-        if start_pos[0] == end_pos[0] || start_pos[1] == end_pos[1]
-            get_rook_path(start_pos, end_pos)
         else
-            get_bishop_path(start_pos, end_pos)
+            Pieces.white_pieces.each do |defender_piece|
+                move = Move.new(defender_piece, checking_piece.position)
+                if move.allowed_for_piece? && move.path_clear?
+                    threatening_position = checking_piece.position
+                    defender_position = defender_piece.position
+                    move.change_position
+                    checking_piece.surrender
+                    if !self.check?
+                        checking_piece.restore(threatening_position)
+                        defender_piece.restore(defender_position)
+                        return true
+                    else
+                        checking_piece.restore(threatening_position)
+                        defender_piece.restore(defender_position)
+                        return false
+                    end
+                end
+            end
         end
+    end
 
-        def get_path(rank, start_pos, end_pos)
-            if rank == "rook"
-                get_rook_path(start_pos, end_pos)
-            elsif rank == "bishop"
-                get_bishop_path(start_pos, end_pos)
-            elsif rank == "queen"
-                get_queen_path(start_pos, end_pos)
+    def block_checking_piece?(checking_move, defender_color)
+        if defender_color == "white"
+            Pieces.white_pieces.each do |defender_piece|
+                checking_move.path.each do |position_along_path|
+                    blocking_move = Move.new(piece, position_along_path)
+                    if blocking_move.allowed_for_piece? && blocking_move.path_clear?
+                        defender_position = defender_piece.position
+                        blocking_move.change_position
+                        if !self.check?
+                            defender_piece.restore(defender_position)
+                            return true
+                        else
+                            defender_piece.restore(defender_position)
+                            return false
+                        end
+                    end
+                end
+            end
+        else
+            Pieces.red_pieces.each do |defender_piece|
+                checking_move.path.each do |position_along_path|
+                    blocking_move = Move.new(piece, position_along_path)
+                    if blocking_move.allowed_for_piece? && blocking_move.path_clear?
+                        defender_position = defender_piece.position
+                        blocking_move.change_position
+                        if !self.check?
+                            defender_piece.restore(defender_position)
+                            return true
+                        else
+                            defender_piece.restore(defender_position)
+                            return false
+                        end
+                    end
+                end
+            end
+        end
+    end
+    
+    def king_escape?(position)
+        grid = []
+        i = -1
+        while i <= 1
+            j = -1
+            while j <= 1
+                grid.push([position[0] + i, position[1] + j])
+                j += 1
+            end
+            i += 1
+        end
+        escape_squares = grid.select do |square| 
+            square[0] > -1 && square[0] < 8 && 
+            square[1] > -1 && square[1] < 8
+        end
+        escape_squares.each do |square|
+            move = Move.new(self, square)
+            original_position = position
+            move.change_position
+            if !self.check?
+                self.restore(original_position)
+                return true
             else
-                return []
+                self.restore(original_position)
+                return false
+            end
         end
     end
 end
 
 
 class King < Piece
-    include Get_path
+    
 
     def initialize(color)
         color == "white" ? @position = [4,0] : @position = [4,7]
         @rank = "king"
         @COLOR = color
         color == "white" ? @symbol = "♔" : @symbol = "♚"
-        @checking_pieces = []
-        @checking_moves = []
         @@pieces.push(self)
     end
 
@@ -616,11 +736,19 @@ class King < Piece
         super
     end
 
+    def restore(position)
+        super
+    end
+
     def check?
+        @checking_moves = []
+        @checking_pieces = []
         if @COLOR == "white"
             Piece.red_pieces.each do |piece|
                 move = Move.new(piece, @position)
                 if move.allowed_for_piece? && move.path_clear? && move.capture?
+                    @checking_moves.push(move)
+                    @checking_pieces.push(piece)
                     return true
                 end
             end
@@ -630,6 +758,8 @@ class King < Piece
                 move = Move.new(piece, @position)
                 if move.allowed_for_piece? && move.path_clear? && move.capture?
                     return true
+                    @checking_moves.push(move)
+                    @checking_pieces.push(piece)
                 end
             end
         else 
@@ -637,37 +767,22 @@ class King < Piece
         end
     end
 
+
     #We assume that piece is in check
     def checkmate?
-        if @COLOR == "white"
-            if @checking_piece.length == 1
-                #Here we check IF it's possible to capture the checking piece
-                Pieces.white_pieces.each do |piece|
-                    move = Move.new(piece, @checking_piece[0].position)
-                    if move.allowed_for_piece? && move.path_clear?
-                        # Finish this. Figure out reverse move thingy
-                    end
-                end
-                #Here we check IF it's possible to block the checking pieces
-                Pieces.white_pieces.each do |piece|
-                    @checking_moves[0].path.each do |position_along_path|
-                        blocking_move = Move.new(piece, position_along_path)
-                        if blocking_move.allowed_for_piece? &&
-                            blocking_move.path_clear?
-                            # Finish this. Figure out reverse move thingy
-                        end
-                    end
-                end
-            else
-                #Here we check IF King can move out of danger.
-                
-
-            end          
-        elsif @COLOR == "red"
-            #copy stuff from above
-
+        if @checking_pieces.length == 1
+            #Here we check IF it's possible to capture the checking piece
+            if capture_checking_piece?(@checking_pieces[0], @COLOR)
+                return false
+            #Here we check IF it's possible to block the checking pieces
+            elsif block_checking_piece?(@checking_moves[0], @COLOR)
+                return false
+            end
+        elsif king_escape?(@position)
+            return false
+        else
+            return true
         end
-        return true
     end
 end
 
